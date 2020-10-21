@@ -10,7 +10,8 @@ create table Pessoas --Cria tabela
 	id       int         not null primary key identity, --Número inteiro, não pode ser nulo, chave primária e o proprio SGBD cria
 	Nome     varchar(50) not null, --Nome é uma variavel de tamanho 50
 	Email    varchar(30) unique,
-	DataNasc date        not null
+	DataNasc date        not null,
+	Senha	 varchar(8)  not null
 )
 go
  
