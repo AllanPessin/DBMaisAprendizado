@@ -1,9 +1,9 @@
 ﻿--Cria o banco de dados
 create database DBinter
-go --Da continuidade no código atualizando o banco de dados
+GO
 
 use DBinter--Torna o banco especificado em uso
-go
+GO
 
 create table Pessoas --Cria tabela 
 (
@@ -14,14 +14,14 @@ create table Pessoas --Cria tabela
 	Senha	       varchar(8)  not null
 	--Telefone varchar(15) not null --Colocar uma unica coluna usada nas duas heranças
 )
-go
+GO
  
 create table Alunos --Cria tabela
 (
 	AlunoId int not null primary key references Pessoas, --Usa a chave primaria de pessoas
 	Telefone varchar(15) not null
 )
-go
+GO
 
 create table Professores
 (
@@ -29,28 +29,27 @@ create table Professores
 	Credito     money,
 	Telefone    varchar(15) not null
 )
-go
+GO
 
 create table Compras
 (
 	CompraId   int      not null primary key identity,
 	AlunoId    int      not null references Alunos, --Preciso do id de quem faz a compra
 	DataCompra datetime not null,
-	status     int,
+	Status     int,
 	Valor      money
 )
-go
+GO
 
 create table Cursos
 (
 	CursoId        int         not null primary key identity,
-	AlunoId        int	           null references Alunos, --Precisa do id de quem faz a compra
-	ProfessoresId  int         not null references Professores, --Precisa do id de quem disponibiliza o material
+	ProfessorId  int         not null references Professores, --Precisa do id de quem disponibiliza o material
 	Nome           varchar(50) not null,
 	Preco          money	   not null,
 	CargaHoraria   time        not null --varchar(50)
 )
-go
+GO
 
 create table Compra_Curso
 (	
@@ -58,12 +57,12 @@ create table Compra_Curso
 	CursoId    int   not null references Cursos,
 	primary    key (CompraId, CursoId), --Chave primária composta
 	Quantidade int   not null,
-	status     int,
+	Status     int,
 	Valor      money not null
 )
-go
+GO
 
-create table Aula_gravada
+create table Aula_Gravada
 (
 	AulaId    int            not null primary key identity,
 	CursoId   int            not null references Cursos,
@@ -76,7 +75,7 @@ GO
 -------------------------------------------------------------------
 --Procedures para inserir
 -------------------------------------------------------------------
-
+--Procedure para inserir tabela Professores
 CREATE PROCEDURE AdicionarProfessor
 (
 	@Nome VARCHAR(50), @Email VARCHAR(50), @DataNascimento DATE, @Senha VARCHAR(8), @Telefone VARCHAR(15)
@@ -87,7 +86,7 @@ BEGIN
 	INSERT INTO Professores (ProfessorId, Telefone) VALUES (@@IDENTITY, @Telefone)
 END
 GO
-
+--Procedure para inserir tabela Alunos
 CREATE PROCEDURE AdicionarAluno
 (
 	@Nome VARCHAR(50), @Email VARCHAR(50), @DataNascimento DATE, @Senha VARCHAR(8), @Telefone VARCHAR(15)
@@ -98,21 +97,42 @@ BEGIN
 	INSERT INTO Alunos(AlunoId, Telefone) VALUES (@@IDENTITY, @Telefone)
 END
 GO
-
---CREATE PROCEDURE AdicionarCurso
---(
---	@Nome  VARCHAR(50), @Preco DECIMAL, @CargaHoraria DATE
---)
---AS
---BEGIN
---	INSERT INTO Cursos(
---END
---GO
+--Procedure para inserir tabela Cursos    
+CREATE PROCEDURE AdicionarCurso
+(
+	@ProfessorId INT, @Nome VARCHAR(50), @Preco MONEY, @CargaHoraria TIME
+)
+AS
+BEGIN
+	INSERT INTO Cursos VALUES (@ProfessorId, @Nome, @Preco, @CargaHoraria)
+END
+GO
+--Procedure para inserir tabela Compras
+CREATE PROCEDURE AdicionarCompra
+(
+	@AlunoId INT, @DataCompra DATETIME, @Status INT, @Valor MONEY
+)
+AS
+BEGIN
+	INSERT INTO Compra_Curso VALUES (@AlunoId, @DataCompra, @Status, @Valor)
+END
+GO
+--Procedure para inserir tabela Aulas
+CREATE PROCEDURE AdicionarAula
+(
+	@CursoId INT, @Titulo VARCHAR(50), @Arquivo VARBINARY(MAX), @Descricao VARCHAR(MAX)
+)
+AS
+BEGIN
+	INSERT INTO Aula_gravada VALUES (@CursoId, @Titulo, @Arquivo, @Descricao)
+END
+GO
 
 -------------------------------------------------------------------
 --Procedures para Update
 -------------------------------------------------------------------
 
+--Update para tabela Alunos
 CREATE PROCEDURE UpdateAluno
 (
 	@PessoaId int, @Nome VARCHAR(50), @Email VARCHAR(50), @DataNascimento DATE, @Senha VARCHAR(8), @Telefone VARCHAR(15)
@@ -132,7 +152,7 @@ BEGIN
 END
 GO
 
-
+--Update para tabela Professores
 CREATE PROCEDURE UpdateProfessor
 (
 	@PessoaId int, @Nome VARCHAR(50), @Email VARCHAR(50), @DataNascimento DATE, @Senha VARCHAR(8), @Telefone VARCHAR(15)
@@ -151,3 +171,41 @@ BEGIN
 	END CATCH
 END
 GO
+--Update para tabela Aulas
+CREATE PROCEDURE UpdateAula
+(
+	@CursoId INT, @Titulo VARCHAR(50), @Arquivo VARBINARY(MAX), @Descricao VARCHAR(MAX)
+)
+AS
+BEGIN
+	UPDATE Aula_gravada SET Titulo = @Titulo, Arquivo = @Arquivo, Descricao = @Descricao
+		WHERE CursoId = @CursoId
+END
+GO
+--Update para tabela Cursos
+CREATE PROCEDURE UpdateCurso
+(
+	@ProfessorId INT, @Nome VARCHAR(50), @Preco MONEY, @CargaHoraria TIME
+)
+AS
+BEGIN
+	UPDATE Cursos SET Nome = @Nome, Preco = @Preco, CargaHoraria = @CargaHoraria
+		WHERE ProfessorId = @ProfessorId
+END
+GO
+
+CREATE PROCEDURE UpdateCompra
+(
+	@AlunoId INT, @DataCompra DATETIME, @Status INT, @Valor MONEY
+)
+AS
+BEGIN
+	UPDATE Compras SET AlunoId = @AlunoId, DataCompra = @DataCompra, Status = @Status, Valor = @Valor
+END
+GO
+-------------------------------------------------------------------
+--Views
+-------------------------------------------------------------------
+
+CREATE VIEW V_Alunos
+AS
