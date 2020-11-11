@@ -1,74 +1,74 @@
 ﻿--Cria o banco de dados
-create database DBinter
+CREATE DATABASE DBinter
 GO
 
-use DBinter--Torna o banco especificado em uso
+USE DBinter--Torna o banco especificado em uso
 GO
 
-create table Pessoas --Cria tabela 
+CREATE TABLE Pessoas --Cria tabela 
 (
-	PessoaId       int         not null primary key identity, --Número inteiro, não pode ser nulo, chave primária e o proprio SGBD cria
-	Nome           varchar(50) not null, --Nome é uma variavel de tamanho 50
-	Email          varchar(30) unique,
-	DataNascimento date        not null,
-	Senha	       varchar(8)  not null
+	PessoaId       INT         NOT NULL PRIMARY KEY IDENTITY, --Número inteiro, não pode ser nulo, chave primária e o proprio SGBD cria
+	Nome           VARCHAR(50) NOT NULL, --Nome é uma variavel de tamanho 50
+	Email          VARCHAR(30) UNIQUE,
+	DataNascimento DATE        NOT NULL,
+	Senha	       VARCHAR(8)  NOT NULL,
+	Telefone       VARCHAR(15) NOT NULL
 	--Telefone varchar(15) not null --Colocar uma unica coluna usada nas duas heranças
 )
 GO
  
-create table Alunos --Cria tabela
+CREATE TABLE Alunos --Cria tabela
 (
-	AlunoId int not null primary key references Pessoas, --Usa a chave primaria de pessoas
-	Telefone varchar(15) not null
+	AlunoId INT NOT NULL PRIMARY KEY REFERENCES Pessoas, --Usa a chave primaria de pessoas
 )
 GO
 
-create table Professores
+CREATE TABLE Professores
 (
-	ProfessorId int not null primary key references Pessoas, --Usa a chave primaria de pessoas
-	Credito     money,
-	Telefone    varchar(15) not null
+	ProfessorId INT NOT NULL PRIMARY KEY REFERENCES Pessoas, --Usa a chave primaria de pessoas
+	Credito     MONEY
 )
 GO
 
-create table Compras
+CREATE TABLE Compras
 (
-	CompraId   int      not null primary key identity,
-	AlunoId    int      not null references Alunos, --Preciso do id de quem faz a compra
-	DataCompra datetime not null,
-	Status     int,
-	Valor      money
+	CompraId   INT      NOT NULL PRIMARY KEY IDENTITY,
+	AlunoId    INT      NOT NULL REFERENCES Alunos, --Preciso do id de quem faz a compra
+	DataCompra DATETIME NOT NULL,
+	Status     INT,
+	Valor      MONEY
 )
 GO
 
-create table Cursos
+CREATE TABLE Cursos
 (
-	CursoId        int         not null primary key identity,
-	ProfessorId  int         not null references Professores, --Precisa do id de quem disponibiliza o material
-	Nome           varchar(50) not null,
-	Preco          money	   not null,
-	CargaHoraria   time        not null --varchar(50)
+	CursoId      INT         NOT NULL PRIMARY KEY IDENTITY,
+	ProfessorId  INT         NOT NULL REFERENCES Professores, --Precisa do id de quem disponibiliza o material
+	Nome         VARCHAR(50) NOT NULL,
+	Preco        MONEY	     NOT NULL,
+	Thumnail	 VARBINARY(MAX) NOT NULL,
+	CargaHoraria TIME        NOT NULL --varchar(50)
 )
 GO
 
-create table Compra_Curso
+CREATE TABLE Compra_Curso
 (	
-	CompraId   int   not null references Compras,
-	CursoId    int   not null references Cursos,
-	primary    key (CompraId, CursoId), --Chave primária composta
-	Quantidade int   not null,
-	Status     int,
-	Valor      money not null
+	CompraId   INT   NOT NULL REFERENCES Compras,
+	CursoId    INT   NOT NULL REFERENCES Cursos,
+	PRIMARY    KEY (CompraId, CursoId), --Chave primária composta
+	Quantidade INT   NOT NULL,
+	Status     INT,
+	Valor      MONEY NOT NULL
 )
 GO
 
-create table Aula_Gravada
+CREATE TABLE Aula_Gravada
 (
-	AulaId    int            not null primary key identity,
-	CursoId   int            not null references Cursos,
-	Titulo    varchar(50)	 not null,
-	Arquivo   varbinary(max) not null, --Guarda arquivos no Banco de até 2GB,
-	Descricao varchar(max)   not null	 	
+	AulaId    INT            NOT NULL PRIMARY KEY IDENTITY,
+	CursoId   INT            NOT NULL REFERENCES Cursos,
+	Titulo    VARCHAR(50)	 NOT NULL,
+	Arquivo   VARBINARY(max) NOT NULL, --Guarda arquivos no Banco de até 2GB,
+	Descricao VARCHAR(max)   NOT NULL	 	
 )
 GO
 
@@ -193,7 +193,7 @@ BEGIN
 		WHERE ProfessorId = @ProfessorId
 END
 GO
-
+--Update para tabela Compra
 CREATE PROCEDURE UpdateCompra
 (
 	@AlunoId INT, @DataCompra DATETIME, @Status INT, @Valor MONEY
@@ -206,6 +206,25 @@ GO
 -------------------------------------------------------------------
 --Views
 -------------------------------------------------------------------
-
+--VIEW para tabela Alunos
 CREATE VIEW V_Alunos
 AS
+	SELECT a.AlunoId AS ID, p.Nome AS Aluno, p.Email, a.Telefone
+	FROM Alunos a INNER JOIN Pessoas p
+	ON a.AlunoId = p.PessoaId
+GO
+
+--VIEW para tabela Profesores
+CREATE VIEW V_Professores
+AS
+	SELECT pp.ProfessorId AS ID, p.Nome AS Professor, p.Email, pp.Telefone
+	FROM Professores pp INNER JOIN Pessoas p
+	ON pp.ProfessorId = p.PessoaId
+GO
+
+--VIEW para tabela Cursos
+CREATE VIEW V_Cursos
+AS
+	SELECT 
+
+Sp_help Compra_Curso
