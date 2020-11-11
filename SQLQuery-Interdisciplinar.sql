@@ -82,8 +82,8 @@ CREATE PROCEDURE AdicionarProfessor
 )
 AS
 BEGIN
-	INSERT INTO Pessoas VALUES (@Nome, @Email, @DataNascimento, @Senha)
-	INSERT INTO Professores (ProfessorId, Telefone) VALUES (@@IDENTITY, @Telefone)
+	INSERT INTO Pessoas VALUES (@Nome, @Email, @DataNascimento, @Senha, @Telefone)
+	INSERT INTO Professores (ProfessorId) VALUES (@@IDENTITY)
 END
 GO
 --Procedure para inserir tabela Alunos
@@ -93,8 +93,8 @@ CREATE PROCEDURE AdicionarAluno
 )
 AS
 BEGIN
-	INSERT INTO Pessoas VALUES (@Nome, @Email, @DataNascimento, @Senha)
-	INSERT INTO Alunos(AlunoId, Telefone) VALUES (@@IDENTITY, @Telefone)
+	INSERT INTO Pessoas VALUES (@Nome, @Email, @DataNascimento, @Senha, @Telefone)
+	INSERT INTO Alunos(AlunoId) VALUES (@@IDENTITY)
 END
 GO
 --Procedure para inserir tabela Cursos    
@@ -226,5 +226,3 @@ GO
 CREATE VIEW V_Cursos
 AS
 	SELECT 
-
-Sp_help Compra_Curso
