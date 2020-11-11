@@ -209,7 +209,7 @@ GO
 --VIEW para tabela Alunos
 CREATE VIEW V_Alunos
 AS
-	SELECT a.AlunoId AS ID, p.Nome AS Aluno, p.Email, a.Telefone
+	SELECT a.AlunoId AS ID, p.Nome AS Aluno, p.Email, p.Telefone
 	FROM Alunos a INNER JOIN Pessoas p
 	ON a.AlunoId = p.PessoaId
 GO
@@ -217,7 +217,7 @@ GO
 --VIEW para tabela Profesores
 CREATE VIEW V_Professores
 AS
-	SELECT pp.ProfessorId AS ID, p.Nome AS Professor, p.Email, pp.Telefone
+	SELECT pp.ProfessorId AS ID, p.Nome AS Professor, p.Email, p.Telefone
 	FROM Professores pp INNER JOIN Pessoas p
 	ON pp.ProfessorId = p.PessoaId
 GO
