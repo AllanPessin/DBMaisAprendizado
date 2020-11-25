@@ -24,7 +24,7 @@ GO
 CREATE TABLE Professores
 (
 	ProfessorId INT NOT NULL PRIMARY KEY REFERENCES Pessoas,
-	Credito     MONEY   NULL
+	Credito     DECIMAL(10,2) NULL
 
 )
 GO
@@ -35,7 +35,7 @@ CREATE TABLE Compras
 	AlunoId    INT      NOT NULL REFERENCES Alunos,
 	DataCompra DATETIME NOT NULL,
 	Status     INT,
-	Valor      MONEY
+	Valor      DECIMAL(10,2)
 )
 GO
 
@@ -45,8 +45,8 @@ CREATE TABLE Cursos
 	ProfessorId  INT         NOT NULL REFERENCES Professores,
 	Nome         VARCHAR(50) NOT NULL,
 	Preco        MONEY	     NOT NULL,
-	CargaHoraria TIME        NOT NULL,
-	Thumbnail	 VARBINARY(MAX)  NULL
+	CargaHoraria DECIMAL(2,2)NOT NULL
+)
 )
 GO
 
@@ -54,10 +54,10 @@ CREATE TABLE Compra_Curso
 (	
 	CompraId   INT   NOT NULL FOREIGN KEY REFERENCES Compras,
 	CursoId    INT   NOT NULL FOREIGN KEY REFERENCES Cursos,
-	PRIMARY    KEY (CompraId, CursoId),
 	Quantidade INT   NOT NULL,
 	Status     INT,
-	Valor      MONEY NOT NULL
+	Valor      DECIMAL(2,2) NOT NULL
+	PRIMARY    KEY (CompraId, CursoId)
 )
 GO
 
@@ -66,8 +66,7 @@ CREATE TABLE Aula_Gravada
 	AulaId    INT            NOT NULL PRIMARY KEY IDENTITY (1, 1),
 	CursoId   INT            NOT NULL FOREIGN KEY REFERENCES Cursos,
 	Titulo    VARCHAR(50)	 NOT NULL,
-	Descricao VARCHAR(max)   NOT NULL,	
-	Arquivo   VARBINARY(max) NOT NULL,
+	Descricao VARCHAR(max)   NOT NULL,
 )
 GO
 -------------------------------------------------------------------
@@ -86,28 +85,22 @@ INSERT INTO Alunos VALUES (1)
 INSERT INTO Alunos VALUES (2)
 INSERT INTO Alunos VALUES (3)
 
-INSERT INTO Professores VALUES (4, 1000.00)
-INSERT INTO Professores VALUES (5, 200.00)
-INSERT INTO Professores VALUES (6, 0.0)
+INSERT INTO Professores VALUES (4, NULL)
+INSERT INTO Professores VALUES (5, NULL)
+INSERT INTO Professores VALUES (6, NULL)
 
 INSERT INTO Compras VALUES (1, GETDATE(), 1, 15.0)
 INSERT INTO Compras VALUES (2, GETDATE(), 1, 25.0)
 INSERT INTO Compras VALUES (3, GETDATE(), 1, 30.0)
 
-INSERT INTO Cursos ( ProfessorId, Nome, Preco, CargaHoraria, Thumbnail)
-	SELECT '4', 'Programação C#', '80.0', '04:00', BulkColumn FROM OPENROWSET (Bulk 'D:\imgres.htm', Single_Blob) Thumbnail
-INSERT INTO Cursos ( ProfessorId, Nome, Preco, CargaHoraria, Thumbnail)
-	SELECT '5', 'Português', '80.0', '06:00', BulkColumn FROM OPENROWSET (Bulk 'D:\port.jpg', Single_Blob) Thumbnail
-INSERT INTO Cursos ( ProfessorId, Nome, Preco, CargaHoraria, Thumbnail)
-	SELECT '6', 'Matemática', '80.0', '04:00', BulkColumn FROM OPENROWSET (Bulk 'D:\mat.jpg', Single_Blob) Thumbnail
-
-INSERT INTO Aula_Gravada (CursoId, Titulo, Descricao, Arquivo)
-	SELECT '1', 'Bhaskara', 'Introdução a formula de Bhaskara', BulkColumn FROM OPENROWSET (Bulk 'D:\aula1.mp4', Single_Blob) Arquivo
-INSERT INTO Aula_Gravada (CursoId, Titulo, Descricao, Arquivo)
-	SELECT '1', 'Bhaskara', 'Exercícios', BulkColumn FROM OPENROWSET (Bulk 'D:\aula2.mp4', Single_Blob) Arquivo
-INSERT INTO Aula_Gravada (CursoId, Titulo, Descricao, Arquivo)
-	SELECT '1', 'Bhaskara', 'Prova', BulkColumn FROM OPENROWSET (Bulk 'D:\ultima-aula.mp4', Single_Blob) Arquivo
-
+INSERT INTO Cursos VALUES (1, 2, 'Programação', 25, 40.00)
+INSERT INTO Cursos VALUES (1, 2, 'Programação', 25, 40.00)
+INSERT INTO Cursos VALUES (1, 2, 'Programação', 25, 40.00)
+	
+INSERT INTO Aula_Gravada VALUES(1, 'Bhaskara', 'Introdução a formula de Bhaskara')
+INSERT INTO Aula_Gravada VALUES(1, 'Bhaskara', 'Introdução a formula de Bhaskara')
+INSERT INTO Aula_Gravada VALUES(1, 'Bhaskara', 'Introdução a formula de Bhaskara')
+  	
 select * from Aula_Gravada
 select * from Cursos
 select * from Compras
@@ -130,6 +123,7 @@ EXEC AdicionarCurso '9', 'Banco de Dados', '120.0', '02:00'
 --Procedures para inserir
 -------------------------------------------------------------------
 --Procedure para inserir tabela Professores
+GO
 CREATE PROCEDURE AdicionarProfessor
 (
 	@Nome VARCHAR(50), @Email VARCHAR(50), @DataNascimento DATE, @Senha VARCHAR(8), @Telefone VARCHAR(15)
@@ -140,6 +134,7 @@ BEGIN
 	INSERT INTO Professores (ProfessorId) VALUES (@@IDENTITY)
 END
 GO
+
 --Procedure para inserir tabela Alunos
 CREATE PROCEDURE AdicionarAluno
 (
@@ -151,35 +146,72 @@ BEGIN
 	INSERT INTO Alunos(AlunoId) VALUES (@@IDENTITY)
 END
 GO
+
 --Procedure para inserir tabela Cursos    
 CREATE PROCEDURE AdicionarCurso
 (
-	@ProfessorId INT, @Nome VARCHAR(50), @Preco MONEY, @CargaHoraria TIME, @Thumbnail VARBINARY(MAX)
+	@ProfessorId INT, @Nome VARCHAR(50), @Preco DECIMAL(10,2), @CargaHoraria DECIMAL(2,2)
 )
 AS
 BEGIN
-	INSERT INTO Cursos VALUES (@ProfessorId, @Nome, @Preco, @CargaHoraria, @Thumbnail)
+	INSERT INTO Cursos VALUES (@ProfessorId, @Nome, @Preco, @CargaHoraria)
 END
 GO
 
 --Procedure para inserir tabela Compras
 CREATE PROCEDURE AdicionarCompra
 (
-	@AlunoId INT, @DataCompra DATETIME, @Status INT, @Valor MONEY
+	@AlunoId INT, @DataCompra DATETIME, @Status INT, @Valor DECIMAL(10,2)
 )
 AS
 BEGIN
-	INSERT INTO Compra_Curso VALUES (@AlunoId, @DataCompra, @Status, @Valor)
+	INSERT INTO Compra_Curso VALUES (@AlunoId, GETDATE(), 1, @Valor)
 END
 GO
+
 --Procedure para inserir tabela Aulas
 CREATE PROCEDURE AdicionarAula
 (
-	@CursoId INT, @Titulo VARCHAR(50), @Arquivo VARBINARY(MAX), @Descricao VARCHAR(MAX)
+	@CursoId INT, @Titulo VARCHAR(50), @Descricao VARCHAR(MAX)
 )
 AS
 BEGIN
-	INSERT INTO Aula_gravada VALUES (@CursoId, @Titulo, @Arquivo, @Descricao)
+	INSERT INTO Aula_gravada VALUES (@CursoId, @Titulo, @Descricao)
+END
+GO
+
+--Procedure para inserir tabela Compra_Curso
+CREATE PROCEDURE AdicionarCompraCurso
+(
+	@CompraId INT, @CursoId INT, @Quantidade INT, @Status INT, @Valor DECIMAL(10,2)
+)
+AS 
+BEGIN
+	INSERT INTO Compra_Curso VALUES (@CompraId, @CursoId, @Quantidade, 1, @Valor)
+END
+GO
+
+-------------------------------------------------------------------
+--Calcular Total da compra
+-------------------------------------------------------------------
+GO
+CREATE FUNCTiON CalcTotal (@Compra INT)
+RETURNS DECIMAL(10,2)
+AS
+BEGIN 
+	RETURN
+	(
+		SELECT SUM(Quantidade * Valor) FROM Compra_Curso 
+		WHERE CompraId = @Compra
+	)
+END
+GO
+
+GO
+CREATE PROCEDURE ValorTotal(@Compra INT)
+AS
+BEGIN
+	UPDATE Compras SET Valor = dbo.CalcTotal(Compra) WHERE Compra=@Compra	
 END
 GO
 
@@ -190,7 +222,7 @@ GO
 --Update para tabela Professores
 CREATE PROCEDURE UpdateProfessor
 (
-	@PessoaId int, @Nome VARCHAR(50), @Email VARCHAR(50), @DataNascimento DATE, @Senha VARCHAR(8), @Telefone VARCHAR(15), @Credito
+	@PessoaId int, @Nome VARCHAR(50), @Email VARCHAR(50), @DataNascimento DATE, @Senha VARCHAR(8), @Telefone VARCHAR(15), @Credito DECIMAL(10,2)
 )
 AS
 BEGIN
@@ -228,18 +260,18 @@ GO
 --Update para tabela Aulas
 CREATE PROCEDURE UpdateAula
 (
-	@CursoId INT, @Titulo VARCHAR(50), @Arquivo VARBINARY(MAX), @Descricao VARCHAR(MAX)
+	@CursoId INT, @Titulo VARCHAR(50), @Descricao VARCHAR(MAX)
 )
 AS
 BEGIN
-	UPDATE Aula_gravada SET Titulo = @Titulo, Arquivo = @Arquivo, Descricao = @Descricao
+	UPDATE Aula_gravada SET Titulo = @Titulo, Descricao = @Descricao
 		WHERE CursoId = @CursoId
 END
 GO
 --Update para tabela Cursos
 CREATE PROCEDURE UpdateCurso
 (
-	@ProfessorId INT, @Nome VARCHAR(50), @Preco MONEY, @CargaHoraria TIME
+	@ProfessorId INT, @Nome VARCHAR(50), @Preco DECIMAL(10,2), @CargaHoraria DECIMAL(2,2)
 )
 AS
 BEGIN
@@ -250,11 +282,11 @@ GO
 --Update para tabela Compra
 CREATE PROCEDURE UpdateCompra
 (
-	@AlunoId INT, @DataCompra DATETIME, @Status INT, @Valor MONEY
+	@AlunoId INT, @Status INT, @Valor DECIMAL(10,2)
 )
 AS
 BEGIN
-	UPDATE Compras SET AlunoId = @AlunoId, DataCompra = @DataCompra, Status = @Status, Valor = @Valor
+	UPDATE Compras SET AlunoId = @AlunoId, Status = @Status, Valor = @Valor
 END
 GO
 -------------------------------------------------------------------
@@ -276,20 +308,21 @@ AS
 	ON pp.ProfessorId = p.PessoaId
 GO
 
---VIEW para tabela Cursos
---CREATE VIEW V_Cursos
---AS
---	SELECT 
 
---TESTE
-CREATE PROCEDURE AddCurso
-(
-	@ProfessorId INT, @Nome VARCHAR(50), @Preco MONEY, @CargaHoraria TIME, @Thumbnail VARBINARY(MAX)
-)
-AS
-BEGIN
-	INSERT INTO Cursos ( ProfessorId, Nome, Preco, CargaHoraria, Thumbnail)
-		SELECT @ProfessorId, @Nome, @Preco, @CargaHoraria, BulkColumn FROM OPENROWSET (Bulk 'D:\mat.jpg', Single_Blob) Thumbnail
-END
+
+
+	CursoId      INT         NOT NULL PRIMARY KEY IDENTITY (1, 1),
+	ProfessorId  INT         NOT NULL REFERENCES Professores,
+	Nome         VARCHAR(50) NOT NULL,
+	Preco        MONEY	     NOT NULL,
+	CargaHoraria DEC
 GO
-EXEC AddCurso '
+CREATE VIEW V_Cursos
+AS
+	SELECT CursoId AS Código, ProfessorId Produto, estoque Estoque, valor Preço,
+		CASE STATUS
+			WHEN 1 THEN 'Ativo'
+			WHEN 2 THEN 'Inativo'	
+		END Situação
+	FROM Cursos
+GO
