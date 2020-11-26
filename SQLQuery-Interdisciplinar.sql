@@ -41,12 +41,11 @@ GO
 
 CREATE TABLE Cursos
 (
-	CursoId      INT         NOT NULL PRIMARY KEY IDENTITY (1, 1),
-	ProfessorId  INT         NOT NULL REFERENCES Professores,
-	Nome         VARCHAR(50) NOT NULL,
-	Preco        MONEY	     NOT NULL,
-	CargaHoraria DECIMAL(2,2)NOT NULL
-)
+	CursoId      INT           NOT NULL PRIMARY KEY IDENTITY (1, 1),
+	ProfessorId  INT           NOT NULL REFERENCES Professores,
+	Nome         VARCHAR(50)   NOT NULL,
+	Preco        DECIMAL(10,2) NOT NULL,
+	CargaHoraria DECIMAL(4,2)  NOT NULL
 )
 GO
 
@@ -56,7 +55,7 @@ CREATE TABLE Compra_Curso
 	CursoId    INT   NOT NULL FOREIGN KEY REFERENCES Cursos,
 	Quantidade INT   NOT NULL,
 	Status     INT,
-	Valor      DECIMAL(2,2) NOT NULL
+	Valor      DECIMAL(10,2) NOT NULL
 	PRIMARY    KEY (CompraId, CursoId)
 )
 GO
@@ -89,21 +88,26 @@ INSERT INTO Professores VALUES (4, NULL)
 INSERT INTO Professores VALUES (5, NULL)
 INSERT INTO Professores VALUES (6, NULL)
 
-INSERT INTO Compras VALUES (1, GETDATE(), 1, 15.0)
-INSERT INTO Compras VALUES (2, GETDATE(), 1, 25.0)
+INSERT INTO Compras VALUES (1, GETDATE(), 1, NULL)
+INSERT INTO Compras VALUES (2, GETDATE(), 1, NULL)
 INSERT INTO Compras VALUES (3, GETDATE(), 1, 30.0)
 
-INSERT INTO Cursos VALUES (1, 2, 'Programação', 25, 40.00)
-INSERT INTO Cursos VALUES (1, 2, 'Programação', 25, 40.00)
-INSERT INTO Cursos VALUES (1, 2, 'Programação', 25, 40.00)
+INSERT INTO Cursos VALUES (4, 'Programação', 80.0, 40.0)
+INSERT INTO Cursos VALUES (5, 'Banco de Dados', 25, 80.00)
+INSERT INTO Cursos VALUES (6, 'Mobile', 40, 30)
 	
-INSERT INTO Aula_Gravada VALUES(1, 'Bhaskara', 'Introdução a formula de Bhaskara')
-INSERT INTO Aula_Gravada VALUES(1, 'Bhaskara', 'Introdução a formula de Bhaskara')
-INSERT INTO Aula_Gravada VALUES(1, 'Bhaskara', 'Introdução a formula de Bhaskara')
+INSERT INTO Aula_Gravada VALUES(3, 'React Native', 'Utilização de react natice')
+INSERT INTO Aula_Gravada VALUES(2, 'INSERT', 'Como fazer insert')
+INSERT INTO Aula_Gravada VALUES(1, 'C# Herança', 'Conceito de herança')
+
+INSERT INTO Compra_Curso VALUES(1, 2, 1, 1, 80)
+INSERT INTO Compra_Curso VALUES(4, 1, 1, 1, 40)
+INSERT INTO Compra_Curso VALUES(3, 3, 1, 1, 30)
   	
-select * from Aula_Gravada
+select * from Aula_Gravadar
 select * from Cursos
 select * from Compras
+select * from Compra_Curso
 select * from Professores
 select * from Alunos
 select * from Pessoas
@@ -283,7 +287,7 @@ GO
 CREATE PROCEDURE UpdateCompra
 (
 	@AlunoId INT, @Status INT, @Valor DECIMAL(10,2)
-)
+) 
 AS
 BEGIN
 	UPDATE Compras SET AlunoId = @AlunoId, Status = @Status, Valor = @Valor
@@ -307,8 +311,8 @@ AS
 	FROM Professores pp INNER JOIN Pessoas p
 	ON pp.ProfessorId = p.PessoaId
 GO
-
-
+use DBinter
+Sp_help Compra_Curso
 
 
 	CursoId      INT         NOT NULL PRIMARY KEY IDENTITY (1, 1),
