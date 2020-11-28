@@ -169,7 +169,7 @@ CREATE PROCEDURE AdicionarCompra
 )
 AS
 BEGIN
-	INSERT INTO Compra_Curso VALUES (@AlunoId, GETDATE(), 1, @Valor)
+	INSERT INTO Compra VALUES (@AlunoId, GETDATE(), 1, @Valor)
 END
 GO
 
