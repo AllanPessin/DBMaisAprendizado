@@ -48,7 +48,7 @@ CREATE TABLE Cursos
 	CargaHoraria DECIMAL(4,2)  NOT NULL
 )
 GO
-
+sp_help cursos	
 CREATE TABLE Compra_Curso
 (	
 	CompraId   INT   NOT NULL FOREIGN KEY REFERENCES Compras,
@@ -101,28 +101,28 @@ INSERT INTO Aula_Gravada VALUES(2, 'INSERT', 'Como fazer insert')
 INSERT INTO Aula_Gravada VALUES(1, 'C# Herança', 'Conceito de herança')
 
 INSERT INTO Compra_Curso VALUES(1, 2, 1, 1, 80)
-INSERT INTO Compra_Curso VALUES(4, 1, 1, 1, 40)
+INSERT INTO Compra_Curso VALUES(2, 1, 1, 1, 40)
 INSERT INTO Compra_Curso VALUES(3, 3, 1, 1, 30)
-  	
-select * from Aula_Gravadar
-select * from Cursos
-select * from Compras
-select * from Compra_Curso
-select * from Professores
-select * from Alunos
-select * from Pessoas
+
 -------------------------------------------------------------------
 --Testes de Procedures
 -------------------------------------------------------------------
 EXEC AdicionarProfessor 'Roberto', 'robert@email.com', '1979-08-06', '555555', '179523164'
 EXEC AdicionarProfessor 'Marcelo', 'celo@email.com', '1979-08-06', '123654', '179124564'
-EXEC UpdateProfessor '6', 'Jéssica', 'Jess@hotmail.com', '1999-08-04', '3159975', '981458796'
+
 
 EXEC AdicionarAluno 'Pedro', 'Pedrinho@Gmail.com', '1999-09-05', '498431', '169998855'
 EXEC UpdateAluno '1', 'Allan da Silva', 'allan@hotmail.com', '1998-03-08', '31599753', '981522510'
 
-EXEC AdicionarCurso '9', 'Banco de Dados', '120.0', '02:00'
+EXEC AdicionarCurso '7', 'Guitarra', '120', '20'
 
+EXEC AdicionarCompra '1', '80.00' 
+
+EXEC AdicionarAula '1', 'Primeira aula', 'introdução aos conceitos'
+EXEC AdicionarCompraCurso  '5', '1', '100', '6'
+
+EXEC UpdateProfessor '6', 'Jéssica', 'Jess@hotmail.com', '1999-08-04', '3159975', '981458796'
+EXEC UpdateProfessor '7', 'Roberto', 'roberto@email.com', '1979-08-06', '555555', '179523164'
 -------------------------------------------------------------------
 --Procedures para inserir
 -------------------------------------------------------------------
@@ -151,25 +151,28 @@ BEGIN
 END
 GO
 
---Procedure para inserir tabela Cursos    
+--Procedure para inserir tabela Cursos  
+
 CREATE PROCEDURE AdicionarCurso
 (
-	@ProfessorId INT, @Nome VARCHAR(50), @Preco DECIMAL(10,2), @CargaHoraria DECIMAL(2,2)
+	@ProfessorId INT, @Nome VARCHAR(50), @Preco DECIMAL(10,2), @CargaHoraria DECIMAL(4,2)
 )
 AS
 BEGIN
 	INSERT INTO Cursos VALUES (@ProfessorId, @Nome, @Preco, @CargaHoraria)
 END
 GO
-
+EXEC AdicionarCompraCurso 
 --Procedure para inserir tabela Compras
-CREATE PROCEDURE AdicionarCompra
+EXEC
+Create PROCEDURE AdicionarCompra
 (
-	@AlunoId INT, @DataCompra DATETIME, @Status INT, @Valor DECIMAL(10,2)
+    @AlunoId INT, @Valor DECIMAL(10,2)
 )
 AS
 BEGIN
-	INSERT INTO Compra VALUES (@AlunoId, GETDATE(), 1, @Valor)
+    INSERT INTO Compras VALUES (@AlunoId, GETDATE(), 1, @Valor)
+      SELECT @@IDENTITY AS 'CompraId';
 END
 GO
 
@@ -185,13 +188,15 @@ END
 GO
 
 --Procedure para inserir tabela Compra_Curso
-CREATE PROCEDURE AdicionarCompraCurso
+ALTER PROCEDURE AdicionarCompraCurso
 (
-	@CompraId INT, @CursoId INT, @Quantidade INT, @Status INT, @Valor DECIMAL(10,2)
+   @CompraId INT, @CursoId INT, @Valor DECIMAL(10,2), @ProfessorId INT
 )
 AS 
 BEGIN
-	INSERT INTO Compra_Curso VALUES (@CompraId, @CursoId, @Quantidade, 1, @Valor)
+    INSERT INTO Compra_Curso VALUES (@CompraId, @CursoId, 1, 1, @Valor)
+		UPDATE Professores SET Credito = Credito + @Valor
+			WHERE ProfessorId = @ProfessorId
 END
 GO
 
@@ -226,13 +231,13 @@ GO
 --Update para tabela Professores
 CREATE PROCEDURE UpdateProfessor
 (
-	@PessoaId int, @Nome VARCHAR(50), @Email VARCHAR(50), @DataNascimento DATE, @Senha VARCHAR(8), @Telefone VARCHAR(15), @Credito DECIMAL(10,2)
+	@PessoaId int, @Nome VARCHAR(50), @Email VARCHAR(50), @DataNascimento DATE, @Senha VARCHAR(8), @Telefone VARCHAR(15)
 )
 AS
 BEGIN
 	BEGIN TRY
 		BEGIN TRAN
-			UPDATE Pessoas SET Nome = @Nome, Email = @Email, DataNascimento = @DataNascimento, Credito = @Credito
+			UPDATE Pessoas SET Nome = @Nome, Email = @Email, DataNascimento = @DataNascimento
 			WHERE PessoaId = @PessoaId
 			COMMIT
 	END TRY
@@ -260,6 +265,7 @@ BEGIN
 	END CATCH
 END
 GO
+EXEC UpdateAluno '1', 'Allan da Silva', 'allan@hotmail.com', '1998-03-08', '31599753', '981522510'
  
 --Update para tabela Aulas
 CREATE PROCEDURE UpdateAula
@@ -275,7 +281,7 @@ GO
 --Update para tabela Cursos
 CREATE PROCEDURE UpdateCurso
 (
-	@ProfessorId INT, @Nome VARCHAR(50), @Preco DECIMAL(10,2), @CargaHoraria DECIMAL(2,2)
+	@ProfessorId INT, @Nome VARCHAR(50), @Preco DECIMAL(10,2), @CargaHoraria DECIMAL(4,2)
 )
 AS
 BEGIN
@@ -283,16 +289,47 @@ BEGIN
 		WHERE ProfessorId = @ProfessorId
 END
 GO
+EXEC UpdateCurso '3', 'Mobile', '40.00', '35'
+select * from Cursos
 --Update para tabela Compra
 CREATE PROCEDURE UpdateCompra
 (
-	@AlunoId INT, @Status INT, @Valor DECIMAL(10,2)
+	@CompraId INT, @AlunoId INT, @Status INT, @Valor DECIMAL(10,2)
 ) 
 AS
 BEGIN
 	UPDATE Compras SET AlunoId = @AlunoId, Status = @Status, Valor = @Valor
+		WHERE CompraId = @CompraId
 END
 GO
+EXEC UpdateCompra '1', '1', '80'
+
+--Update para tabela Aula_Gravada
+CREATE PROCEDURE UpdateAula
+(
+	@AulaId INT, @CursoId INT, @Titulo VARCHAR(50), @Descricao VARCHAR(MAX)	
+)
+AS
+BEGIN
+	UPDATE Aula_Gravada SET CursoId = @CursoId, Titulo = @Titulo, Descricao = @Descricao
+		WHERE AulaId = @AulaId
+END
+GO
+EXEC UpdateAula '1', '3', 'React', 'Introdução'
+
+--Update para tabela Compra_Curso
+CREATE PROCEDURE UpdateCompraCurso
+(
+	@Quantidade INT, @Valor DECIMAL(10,2), @CompraId INT, @CursoId INT
+)
+AS
+BEGIN
+	UPDATE Compra_Curso SET Quantidade = @Quantidade, Status = 1,  Valor = @Valor 
+		WHERE CompraId = @CompraId and CursoId = @CursoId
+END
+GO
+EXEC UpdateCompraCurso '1', '85', '1', '1'
+
 -------------------------------------------------------------------
 --Views
 -------------------------------------------------------------------
@@ -304,6 +341,8 @@ AS
 	ON a.AlunoId = p.PessoaId
 GO
 
+SELECT * from V_Alunos
+
 --VIEW para tabela Profesores
 CREATE VIEW V_Professores
 AS
@@ -311,22 +350,108 @@ AS
 	FROM Professores pp INNER JOIN Pessoas p
 	ON pp.ProfessorId = p.PessoaId
 GO
-use DBinter
-Sp_help Compra_Curso
+SELECT * FROM V_Professores
+--VIEW para tabela Compras
+CREATE VIEW V_Compras
+AS
+	SELECT DataCompra, Valor, 
+	CASE Status
+		WHEN 1 THEN 'Ativo'
+		WHEN 2 THEN 'Inativo'	
+	END Situação 
+FROM Compras
 
-
-	CursoId      INT         NOT NULL PRIMARY KEY IDENTITY (1, 1),
-	ProfessorId  INT         NOT NULL REFERENCES Professores,
-	Nome         VARCHAR(50) NOT NULL,
-	Preco        MONEY	     NOT NULL,
-	CargaHoraria DEC
-GO
+SELECT * FROM V_Compras
+--VIEW para tabela Cursos
 CREATE VIEW V_Cursos
 AS
-	SELECT CursoId AS Código, ProfessorId Produto, estoque Estoque, valor Preço,
-		CASE STATUS
-			WHEN 1 THEN 'Ativo'
-			WHEN 2 THEN 'Inativo'	
-		END Situação
+	SELECT Nome, Preco, CargaHoraria
 	FROM Cursos
-GO
+
+SELECT * FROM V_Cursos
+
+--VIEW para tabela Aula_Gravada
+CREATE VIEW V_Aula
+AS
+	SELECT Titulo, Descricao
+	FROM Aula_Gravada
+
+SELECT * FROM V_Aula
+
+--VIEW para tabela Compra_Curso
+CREATE VIEW V_CompraCurso
+AS
+	SELECT 
+	CASE Status
+		WHEN 1 THEN 'Ativo'
+		WHEN 2 THEN 'Inativo'	
+	END Situação,
+	Quantidade, Valor	
+	FROM Compra_Curso
+
+SELECT * FROM V_CompraCurso
+-------------------------------------------------------------------
+-- VIEW COM JUNÇÃO (JOIN)
+-------------------------------------------------------------------
+
+
+CREATE VIEW V_CompraCursoId
+AS
+	SELECT cc.Quantidade, cc.Valor, 
+				CASE cc.Status
+					WHEN 1 THEN 'Ativo'
+					WHEN 2 THEN 'Inativo'	
+				END Situação 
+	FROM Compra_Curso cc LEFT JOIN Compras c ON c.CompraId = cc.CompraId 
+--TESTE-
+SELECT * FROM V_CompraCurso
+
+
+CREATE VIEW V_CursosPorProfessor
+AS
+	SELECT c.*,p.nome as ProfessorNome 
+	FROM Cursos c left join pessoas p on p.pessoaId = c.professorId 
+
+SELECT * FROM V_CursosPorProfessor
+
+
+ALTER VIEW V_AlunosNome
+AS
+	SELECT p.PessoaId, p.Nome ,p.Email
+	FROM Pessoas p INNER JOIN Alunos a ON p.PessoaId = a.AlunoId
+
+SELECT * FROM V_AlunosNome
+  	
+
+
+CREATE VIEW V_CompraPorAluno
+AS
+	SELECT a.Nome, c.DataCompra, c.Valor
+	FROM Pessoas a INNER JOIN Compras c ON c.AlunoId = a.PessoaId
+
+SELECT * FROM V_CompraPorAluno
+
+
+CREATE VIEW V_ValorVendasCurso
+AS
+	SELECT SUM(c.Valor) AS Valor, c.CursoId, cc.Nome
+	FROM Compra_Curso c LEFT JOIN Cursos cc ON cc.CursoId = c.CursoId 
+	GROUP BY c.CursoId, cc.Nome
+
+SELECT * FROM V_ValorVendasCurso
+
+CREATE VIEW V_QtdCadastros
+AS
+	SELECT COUNT(p.ProfessorId) AS QuantidadeProfessores, COUNT(a.AlunoId) AS QuantidadeAlunos, COUNT(pp.PessoaId) AS TotalCadastros
+	FROM Pessoas pp LEFT JOIN Alunos a ON a.AlunoId = pp.PessoaId LEFT JOIN Professores p ON p.ProfessorId = pp.PessoaId 
+
+SELECT * FROM V_QtdCadastros
+
+
+CREATE VIEW V_QtdComprasAluno
+AS
+	SELECT p.Nome, COUNT(c.CompraId) AS Quantidade
+	FROM Alunos a INNER JOIN Compras c ON c.AlunoId = a.AlunoId LEFT JOIN Pessoas p ON p.PessoaId = a.AlunoId
+	GROUP BY p.Nome
+
+SELECT * FROM V_QtdComprasAluno
